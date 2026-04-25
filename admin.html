@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — DigiTrain</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.admin-page-wrap { max-width: 1280px; margin: 0 auto; padding: 28px 28px 80px; }
+.admin-header-bar { background: var(--navy); padding: 18px 28px; border-bottom: 3px solid var(--gold); display: flex; align-items: center; gap: 14px; }
+.admin-header-bar .title { font-family:'Kanit',sans-serif; font-size: 18px; font-weight: 600; color: white; }
+.admin-header-bar .sub { font-size: 12px; color: rgba(255,255,255,.5); margin-top: 1px; }
+.admin-login-wrap { max-width: 420px; margin: 80px auto; background: white; border-radius: var(--radius); padding: 36px 32px; box-shadow: var(--shadow-md); border: 1px solid var(--border); }
+.search-sm { padding: 7px 13px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: 'Sarabun',sans-serif; width: 220px; outline: none; }
+.search-sm:focus { border-color: var(--navy-light); }
+.filter-sm { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: 'Sarabun',sans-serif; outline: none; cursor: pointer; }
+.info-note { background: #f0f4ff; border: 1px solid #c5d3e8; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--navy-light); margin-bottom: 16px; }
+.warning-note { background: var(--warning-bg); border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: #92400e; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<!-- Admin Header -->
+<div class="admin-header-bar" id="admin-header" style="display:none">
+  <div>
+    <div class="title">⚙ Admin Panel — <span id="admin-project-name">DigiTrain</span></div>
+    <div class="sub" id="admin-org-name"></div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <span style="font-size:13px;color:rgba(255,255,255,.6)" id="admin-logged-as"></span>
+    <a href="index.html" class="btn btn-ghost btn-sm">← หน้าหลัก</a>
+    <button class="btn btn-ghost btn-sm" id="admin-logout">ออกจากระบบ</button>
+  </div>
+</div>
+
+<!-- Admin Login -->
+<div id="admin-login-section">
+  <div class="admin-login-wrap">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="width:52px;height:52px;background:var(--navy);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px">🔑</div>
+      <h2 style="font-family:'Kanit',sans-serif;font-size:20px;color:var(--navy)">Admin Login</h2>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:4px">เข้าใช้งานระบบหลังบ้าน DigiTrain</p>
+    </div>
+    <div class="form-group"><label>อีเมล <span class="req">*</span></label>
+      <input class="form-control" type="email" id="admin-email" placeholder="admin@senate.go.th" autocomplete="email">
+    </div>
+    <div class="form-group"><label>รหัสผ่าน <span class="req">*</span></label>
+      <input class="form-control" type="password" id="admin-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div id="admin-login-error" class="form-error" style="display:none"></div>
+    <button class="btn btn-primary btn-block" id="btn-admin-login" onclick="AdminApp.login()">เข้าสู่ระบบ Admin</button>
+  </div>
+</div>
+
+<!-- Admin Dashboard -->
+<div id="admin-dashboard" style="display:none">
+  <!-- Stats -->
+  <div class="admin-page-wrap">
+    <div class="stats-grid" id="admin-stats-grid">
+      <div class="stat-card"><div class="stat-num" id="stat-total-reg">—</div><div class="stat-label">ลงทะเบียนทั้งหมด</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-confirmed">—</div><div class="stat-label">ยืนยันแล้ว</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-waitlist">—</div><div class="stat-label">รายชื่อสำรอง</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-schedules-active">—</div><div class="stat-label">รอบที่เปิดรับอยู่</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tab-bar">
+      <button class="admin-tab active" onclick="AdminApp.switchTab('courses')">📚 หลักสูตร</button>
+      <button class="admin-tab" onclick="AdminApp.switchTab('schedules')">📅 ตารางอบรม</button>
+      <button class="admin-tab" onclick="AdminApp.switchTab('registrations')">📋 การลงทะเบียน</button>
+      <button class="admin-tab" onclick="AdminApp.switchTab('checkin')">📱 Check-in</button>
+      <button class="admin-tab" onclick="AdminApp.switchTab('certificates')">🎓 Certificate</button>
+      <button class="admin-tab" onclick="AdminApp.switchTab('users')">👥 ผู้ใช้</button>
+      <button class="admin-tab" onclick="AdminApp.switchTab('config')">⚙ ตั้งค่า</button>
+    </div>
+
+    <!-- ── TAB: COURSES ── -->
+    <div id="tab-courses" class="admin-content active">
+      <div class="data-table-wrap">
+        <div class="data-table-head">
+          <h3>หลักสูตรทั้งหมด</h3>
+          <button class="btn btn-primary btn-sm" onclick="AdminApp.openCourseModal()">+ เพิ่มหลักสูตร</button>
+        </div>
+        <table class="data-table"><thead><tr>
+          <th>รหัส</th><th>ชื่อหลักสูตร</th><th>หมวด</th><th>ชม.</th><th>สถานะ</th><th></th>
+        </tr></thead><tbody id="admin-courses-body">
+          <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">กำลังโหลด...</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- ── TAB: SCHEDULES ── -->
+    <div id="tab-schedules" class="admin-content">
+      <div class="data-table-wrap">
+        <div class="data-table-head">
+          <h3>รอบการอบรม</h3>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="AdminApp.loadSchedules()">🔄 รีเฟรช</button>
+            <button class="btn btn-primary btn-sm" onclick="AdminApp.openScheduleModal()">+ เพิ่มรอบอบรม</button>
+          </div>
+        </div>
+        <div class="warning-note">⚠️ ระบบตรวจสอบการชนกันของห้องอัตโนมัติ เมื่อสร้างรอบใหม่</div>
+        <table class="data-table"><thead><tr>
+          <th>หลักสูตร</th><th>วันที่</th><th>ห้อง</th><th>ปิดรับ</th><th>Mode</th><th>ลงทะเบียน</th><th>สถานะ</th><th></th>
+        </tr></thead><tbody id="admin-schedules-body">
+          <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">กำลังโหลด...</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- ── TAB: REGISTRATIONS ── -->
+    <div id="tab-registrations" class="admin-content">
+      <div class="data-table-wrap">
+        <div class="data-table-head">
+          <h3>รายการลงทะเบียน</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select class="filter-sm" id="filter-sched-id" onchange="AdminApp.loadRegistrations()">
+              <option value="">— ทุกรอบ —</option>
+            </select>
+            <select class="filter-sm" id="filter-reg-status" onchange="AdminApp.filterRegs()">
+              <option value="">— ทุกสถานะ —</option>
+              <option value="confirmed">ยืนยันแล้ว</option>
+              <option value="waitlist">รายชื่อสำรอง</option>
+              <option value="pending_approval">รออนุมัติ</option>
+              <option value="cancelled">ยกเลิกแล้ว</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="AdminApp.exportRegs()">📥 Export Excel</button>
+          </div>
+        </div>
+        <table class="data-table"><thead><tr>
+          <th>ชื่อ-นามสกุล</th><th>สำนัก</th><th>หลักสูตร</th><th>วันอบรม</th><th>รูปแบบ</th><th>สถานะ</th><th></th>
+        </tr></thead><tbody id="admin-regs-body">
+          <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">เลือกรอบอบรมเพื่อดูรายการ</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- ── TAB: CHECK-IN ── -->
+    <div id="tab-checkin" class="admin-content">
+      <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:20px;align-items:start">
+        <!-- Scanner Panel -->
+        <div>
+          <div class="data-table-wrap" style="margin-bottom:16px">
+            <div class="data-table-head"><h3>📱 Scan QR Check-in</h3></div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div class="form-group" style="margin:0"><label>รอบที่ Check-in</label>
+                <select class="form-control" id="checkin-schedule-sel" onchange="AdminApp.loadCheckinSlots()">
+                  <option value="">— เลือกรอบ —</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0"><label>รอบ (เช้า/บ่าย)</label>
+                <select class="form-control" id="checkin-slot-sel">
+                  <option value="">— เลือกรอบ —</option>
+                </select>
+              </div>
+              <div class="checkin-scanner" id="scanner-area" onclick="AdminApp.toggleScanner()">
+                <div style="font-size:42px;margin-bottom:10px">📷</div>
+                <div style="font-size:15px;font-weight:600;color:var(--navy)">กดเปิดกล้อง Scan QR</div>
+                <div style="font-size:13px;color:var(--text-muted);margin-top:4px">รองรับ QR จากอีเมลยืนยัน</div>
+              </div>
+              <div id="scanner-container" style="display:none"></div>
+              <div id="checkin-result" style="display:none;padding:14px;border-radius:var(--radius-sm);text-align:center"></div>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <div class="data-table-head"><h3>รอบ Check-in</h3>
+              <button class="btn btn-primary btn-sm" onclick="AdminApp.openSlotModal()">+ เพิ่มรอบ</button>
+            </div>
+            <table class="data-table"><thead><tr><th>ชื่อรอบ</th><th>ลำดับ</th><th>เวลา</th><th></th></tr></thead>
+            <tbody id="checkin-slots-body"><tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted)">เลือกรอบอบรมก่อน</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Attendance List -->
+        <div class="data-table-wrap">
+          <div class="data-table-head">
+            <h3>รายชื่อผู้เข้าอบรม</h3>
+            <button class="btn btn-outline btn-sm" onclick="AdminApp.exportCheckin()">📥 Export</button>
+          </div>
+          <table class="data-table"><thead><tr>
+            <th>ชื่อ</th><th>สำนัก</th><th>รูปแบบ</th><th id="checkin-slots-header">สถานะ</th>
+          </tr></thead><tbody id="checkin-log-body">
+            <tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted)">เลือกรอบอบรมก่อน</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: CERTIFICATES ── -->
+    <div id="tab-certificates" class="admin-content">
+      <div class="data-table-wrap">
+        <div class="data-table-head">
+          <h3>จัดการ Certificate</h3>
+          <div style="display:flex;gap:8px">
+            <select class="filter-sm" id="filter-cert-sched" onchange="AdminApp.loadCertificates()">
+              <option value="">— เลือกรอบ —</option>
+            </select>
+            <button class="btn btn-success btn-sm" onclick="AdminApp.batchIssueCerts()">🎓 ออก Cert ทั้งหมด</button>
+          </div>
+        </div>
+        <div class="info-note">💡 Batch: ระบบจะอนุมัติและออก Certificate เฉพาะผู้ที่ Check-in ครบทุกรอบอัตโนมัติ</div>
+        <table class="data-table"><thead><tr>
+          <th>ชื่อ</th><th>สำนัก</th><th>Check-in</th><th>สถานะ Cert</th><th>ผู้ลงนาม</th><th></th>
+        </tr></thead><tbody id="admin-cert-body">
+          <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">เลือกรอบอบรมก่อน</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- ── TAB: USERS ── -->
+    <div id="tab-users" class="admin-content">
+      <div class="data-table-wrap">
+        <div class="data-table-head">
+          <h3>ผู้ใช้ทั้งหมด</h3>
+          <div style="display:flex;gap:8px">
+            <input type="text" class="search-sm" id="user-search" placeholder="ค้นหาชื่อ/อีเมล..." oninput="AdminApp.filterUsers()">
+            <select class="filter-sm" id="filter-user-div" onchange="AdminApp.filterUsers()">
+              <option value="">— ทุกสำนัก —</option>
+            </select>
+          </div>
+        </div>
+        <table class="data-table"><thead><tr>
+          <th>ชื่อ-นามสกุล</th><th>อีเมล</th><th>สำนัก</th><th>ตำแหน่ง</th><th>Quota ใช้/Max</th><th>สถานะ</th><th></th>
+        </tr></thead><tbody id="admin-users-body">
+          <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">กำลังโหลด...</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- ── TAB: CONFIG ── -->
+    <div id="tab-config" class="admin-content">
+      <div class="config-grid">
+        <!-- Branding -->
+        <div class="data-table-wrap">
+          <div class="data-table-head"><h3>🎨 Branding &amp; ข้อความ</h3></div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px" id="config-branding"></div>
+        </div>
+        <!-- Rules -->
+        <div class="data-table-wrap">
+          <div class="data-table-head"><h3>📋 กฎการลงทะเบียน</h3></div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px" id="config-rules"></div>
+        </div>
+        <!-- Email -->
+        <div class="data-table-wrap">
+          <div class="data-table-head"><h3>📧 อีเมล &amp; การแจ้งเตือน</h3></div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px" id="config-email"></div>
+        </div>
+        <!-- Cert -->
+        <div class="data-table-wrap">
+          <div class="data-table-head"><h3>🎓 Certificate</h3></div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px" id="config-cert"></div>
+        </div>
+        <!-- GAS Connection (full width) -->
+        <div class="data-table-wrap" style="grid-column:1/-1">
+          <div class="data-table-head"><h3>🔗 การเชื่อมต่อระบบ</h3></div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px" id="config-system"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ ADMIN MODALS ════════════ -->
+
+<!-- Course Modal -->
+<div class="modal-overlay" id="modal-course">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="course-modal-title">เพิ่มหลักสูตร</div></div>
+      <button class="modal-close" onclick="UI.closeModal('modal-course')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="course-id-input">
+      <div class="form-group"><label>ชื่อหลักสูตร (ภาษาไทย) <span class="req">*</span></label><input class="form-control" id="c-title-th"></div>
+      <div class="form-group"><label>ชื่อหลักสูตร (ภาษาอังกฤษ)</label><input class="form-control" id="c-title-en"></div>
+      <div class="form-row">
+        <div class="form-group"><label>หมวดหมู่ <span class="req">*</span></label>
+          <select class="form-control" id="c-category">
+            <option>Office 365</option><option>AI & ChatGPT</option>
+            <option>Data & Analytics</option><option>Cybersecurity</option><option>ทักษะดิจิทัล</option>
+          </select>
+        </div>
+        <div class="form-group"><label>ชั่วโมง <span class="req">*</span></label><input class="form-control" type="number" id="c-hours" min="1" value="6"></div>
+      </div>
+      <div class="form-group"><label>คำอธิบาย</label><textarea class="form-control" id="c-desc" rows="3"></textarea></div>
+      <div class="form-group"><label>สถานะ</label>
+        <select class="form-control" id="c-status"><option value="active">เปิด</option><option value="inactive">ปิด</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-muted" onclick="UI.closeModal('modal-course')">ยกเลิก</button>
+      <button class="btn btn-primary" id="btn-save-course" onclick="AdminApp.saveCourse()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="modal-schedule">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div><div class="modal-title" id="sched-modal-title2">เพิ่มรอบอบรม</div></div>
+      <button class="modal-close" onclick="UI.closeModal('modal-schedule')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="sched-id-input">
+      <div class="form-group"><label>หลักสูตร <span class="req">*</span></label><select class="form-control" id="s-course-id"></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>วันที่เริ่ม <span class="req">*</span></label><input class="form-control" type="date" id="s-start" onchange="AdminApp.checkConflict()"></div>
+        <div class="form-group"><label>วันที่สิ้นสุด</label><input class="form-control" type="date" id="s-end"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>วันปิดรับสมัคร <span class="req">*</span></label><input class="form-control" type="date" id="s-deadline"></div>
+        <div class="form-group"><label>ห้องอบรม</label>
+          <select class="form-control" id="s-room" onchange="AdminApp.checkConflict()">
+            <option value="">— ไม่ระบุ —</option>
+            <option value="ห้องอบรม 1 (ชั้น 3)">ห้องอบรม 1 (ชั้น 3)</option>
+            <option value="ห้องอบรม 2 (ชั้น 5)">ห้องอบรม 2 (ชั้น 5)</option>
+          </select>
+        </div>
+      </div>
+      <div id="conflict-alert" class="conflict-warning" style="display:none">⚠️ <strong>ห้องนี้มีการจองแล้ว!</strong> กรุณาเลือกห้องอื่นหรือเปลี่ยนวันที่</div>
+      <div class="form-row">
+        <div class="form-group"><label>รูปแบบ (Mode) <span class="req">*</span></label>
+          <select class="form-control" id="s-mode" onchange="AdminApp.toggleOnlineFields()">
+            <option value="onsite">Onsite เท่านั้น</option>
+            <option value="online">Online เท่านั้น</option>
+            <option value="hybrid">Hybrid (Onsite + Online)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>แสดง Mode ให้ผู้ใช้เห็น</label>
+          <select class="form-control" id="s-show-mode">
+            <option value="false">ซ่อน (ไม่แสดง)</option>
+            <option value="true">แสดง</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>ที่นั่ง Onsite (ความจุ) <span class="req">*</span></label><input class="form-control" type="number" id="s-cap-onsite" value="30" min="0"></div>
+        <div class="form-group" id="s-online-cap-wrap"><label>ที่นั่ง Online</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="form-control" type="number" id="s-cap-online" placeholder="ไม่จำกัด">
+            <label style="display:flex;align-items:center;gap:5px;white-space:nowrap;font-weight:400"><input type="checkbox" id="s-online-unlimited" checked> ไม่จำกัด</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>วิทยากร</label><input class="form-control" id="s-instructor" placeholder="ชื่อวิทยากร"></div>
+        <div class="form-group"><label>ผู้ลงนาม Certificate</label><input class="form-control" id="s-signatory-name" placeholder="ใช้ค่า default จาก Config"></div>
+      </div>
+      <div class="form-group"><label>ตำแหน่งผู้ลงนาม</label><input class="form-control" id="s-signatory-title"></div>
+      <div class="form-group"><label>Quota ต่อสำนัก (JSON, ไม่บังคับ)</label>
+        <input class="form-control" id="s-quota-div" placeholder='{"สำนักกฎหมาย":3,"สำนักการประชุม":5}'>
+        <small style="color:var(--text-muted);font-size:12px">รูปแบบ JSON: {"ชื่อสำนัก":จำนวน,...} หรือเว้นว่างเพื่อไม่จำกัด</small>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-muted" onclick="UI.closeModal('modal-schedule')">ยกเลิก</button>
+      <button class="btn btn-primary" id="btn-save-sched" onclick="AdminApp.saveSchedule()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Checkin Slot Modal -->
+<div class="modal-overlay" id="modal-slot">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">เพิ่ม/แก้ไขรอบ Check-in</div></div>
+      <button class="modal-close" onclick="UI.closeModal('modal-slot')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="slot-id-input">
+      <div class="form-group"><label>รอบที่ <span class="req">*</span></label>
+        <select class="form-control" id="slot-sched">
+          <option value="">— เลือกรอบอบรม —</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>ชื่อรอบ <span class="req">*</span></label><input class="form-control" id="slot-name" placeholder="เช่น เช้า, บ่าย, วันที่ 1 เช้า"></div>
+        <div class="form-group"><label>ลำดับ <span class="req">*</span></label><input class="form-control" type="number" id="slot-order" value="1" min="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>เวลาเปิด Scan</label><input class="form-control" type="time" id="slot-open" value="08:30"></div>
+        <div class="form-group"><label>เวลาปิด Scan</label><input class="form-control" type="time" id="slot-close" value="09:30"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-muted" onclick="UI.closeModal('modal-slot')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="AdminApp.saveSlot()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Schedule Modal -->
+<div class="modal-overlay" id="modal-cancel-sched">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">ยกเลิกรอบอบรม</div><div class="modal-sub" id="cancel-sched-sub"></div></div>
+      <button class="modal-close" onclick="UI.closeModal('modal-cancel-sched')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="conflict-warning">⚠️ การยกเลิกจะส่งอีเมลแจ้งผู้ลงทะเบียนทุกคนอัตโนมัติ</div>
+      <div class="form-group"><label>เหตุผลการยกเลิก <span class="req">*</span></label>
+        <textarea class="form-control" id="cancel-sched-reason" rows="3" placeholder="ระบุเหตุผล..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-muted" onclick="UI.closeModal('modal-cancel-sched')">ไม่ยกเลิก</button>
+      <button class="btn btn-danger" id="btn-confirm-cancel-sched" onclick="AdminApp.confirmCancelSchedule()">ยืนยันยกเลิกรอบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Quota Modal -->
+<div class="modal-overlay" id="modal-user-quota">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">แก้ไข Quota ผู้ใช้</div><div class="modal-sub" id="quota-modal-sub"></div></div>
+      <button class="modal-close" onclick="UI.closeModal('modal-user-quota')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="quota-user-id">
+      <div class="form-group"><label>Quota override (เว้นว่าง = ใช้ค่า default)</label>
+        <input class="form-control" type="number" id="quota-override" min="0" placeholder="0 = ใช้ค่าจาก Config">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-muted" onclick="UI.closeModal('modal-user-quota')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="AdminApp.saveUserQuota()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+// ═══════════════ ADMIN APP ═══════════════
+const AdminApp = {
+  courses:   [],
+  schedules: [],
+  regs:      [],
+  allRegs:   [],
+  users:     [],
+  allUsers:  [],
+  _cancelSchedId: null,
+  _qrScanner: null,
+  _currentCheckinSchedId: null,
+
+  async init() {
+    if (!Auth.isLoggedIn() || !Auth.isAdmin()) {
+      document.getElementById('admin-login-section').style.display = '';
+      document.getElementById('admin-dashboard').style.display = 'none';
+      document.getElementById('admin-header').style.display = 'none';
+      return;
+    }
+    this.showDashboard();
+  },
+
+  async login() {
+    const email = document.getElementById('admin-email').value.trim();
+    const pass  = document.getElementById('admin-pass').value;
+    const btn   = document.getElementById('btn-admin-login');
+    const errEl = document.getElementById('admin-login-error');
+    errEl.style.display = 'none';
+    if (!email || !pass) { errEl.textContent='กรุณากรอกข้อมูล'; errEl.style.display=''; return; }
+    UI.setLoading(btn, true);
+    try {
+      const r = await API.login(email, pass);
+      if (r.user.staff_type !== 'admin') { errEl.textContent='บัญชีนี้ไม่มีสิทธิ์ Admin'; errEl.style.display=''; return; }
+      Auth.save(r.token, r.user);
+      this.showDashboard();
+    } catch (e) { errEl.textContent = e.message; errEl.style.display = ''; }
+    finally { UI.setLoading(btn, false); }
+  },
+
+  async showDashboard() {
+    document.getElementById('admin-login-section').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = '';
+    document.getElementById('admin-header').style.display = '';
+    const user = Auth.getUser();
+    document.getElementById('admin-logged-as').textContent = user.first_name + ' ' + user.last_name;
+
+    document.getElementById('admin-logout').addEventListener('click', () => {
+      Auth.clear(); location.reload();
+    });
+
+    await this.loadConfig();
+    await this.loadCourses();
+    await this.loadSchedules();
+    await this.loadUsers();
+    this.populateScheduleSelects();
+  },
+
+  switchTab(name) {
+    document.querySelectorAll('.admin-tab').forEach((t,i) => {
+      const names = ['courses','schedules','registrations','checkin','certificates','users','config'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'registrations') this.loadRegistrations();
+    if (name === 'config') this.renderConfig();
+  },
+
+  // ── Courses ──────────────────────────────────────────────────
+  async loadCourses() {
+    try {
+      const r = await API.adminGetCourses();
+      this.courses = r.courses || [];
+      this.renderCourses();
+    } catch (e) { UI.toast('โหลดหลักสูตรไม่ได้', e.message, 'error'); }
+  },
+
+  renderCourses() {
+    const tbody = document.getElementById('admin-courses-body');
+    tbody.innerHTML = this.courses.map(c => `<tr>
+      <td><code style="font-size:12px;background:var(--bg);padding:2px 6px;border-radius:4px">${UI.esc(c.course_id)}</code></td>
+      <td><strong>${UI.esc(c.title_th)}</strong></td>
+      <td><span class="tag tag-info">${UI.esc(c.category)}</span></td>
+      <td>${UI.esc(String(c.hours))} ชม.</td>
+      <td>${UI.statusBadge(c.status)}</td>
+      <td class="actions">
+        <button class="btn btn-outline btn-sm" onclick="AdminApp.openCourseModal('${c.course_id}')">แก้ไข</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">ยังไม่มีหลักสูตร</td></tr>';
+  },
+
+  openCourseModal(courseId) {
+    const c = courseId ? this.courses.find(x => x.course_id === courseId) : null;
+    document.getElementById('course-modal-title').textContent = c ? 'แก้ไขหลักสูตร' : 'เพิ่มหลักสูตร';
+    document.getElementById('course-id-input').value  = c?.course_id || '';
+    document.getElementById('c-title-th').value  = c?.title_th || '';
+    document.getElementById('c-title-en').value  = c?.title_en || '';
+    document.getElementById('c-category').value  = c?.category || 'Office 365';
+    document.getElementById('c-hours').value     = c?.hours || 6;
+    document.getElementById('c-desc').value      = c?.description || '';
+    document.getElementById('c-status').value    = c?.status || 'active';
+    UI.openModal('modal-course');
+  },
+
+  async saveCourse() {
+    const btn = document.getElementById('btn-save-course');
+    const id  = document.getElementById('course-id-input').value;
+    const data = {
+      title_th: document.getElementById('c-title-th').value.trim(),
+      title_en: document.getElementById('c-title-en').value.trim(),
+      category: document.getElementById('c-category').value,
+      hours:    document.getElementById('c-hours').value,
+      description: document.getElementById('c-desc').value.trim(),
+      status:   document.getElementById('c-status').value
+    };
+    if (!data.title_th) { UI.toast('กรุณากรอกชื่อหลักสูตร','','error'); return; }
+    UI.setLoading(btn, true);
+    try {
+      if (id) await API.adminUpdateCourse(id, data);
+      else    await API.adminCreateCourse(data);
+      UI.closeModal('modal-course');
+      await this.loadCourses();
+      UI.toast('บันทึกสำเร็จ', id ? 'อัปเดตหลักสูตรแล้ว' : 'เพิ่มหลักสูตรใหม่แล้ว', 'success');
+    } catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+    finally { UI.setLoading(btn, false); }
+  },
+
+  // ── Schedules ─────────────────────────────────────────────────
+  async loadSchedules() {
+    try {
+      const r = await API.adminGetSchedules();
+      this.schedules = r.schedules || [];
+      this.renderSchedules();
+    } catch (e) { UI.toast('โหลดตารางไม่ได้', e.message, 'error'); }
+    // Stats
+    try {
+      const ar = await API.adminGetRegistrations();
+      const regs = ar.registrations || [];
+      document.getElementById('stat-total-reg').textContent = regs.length;
+      document.getElementById('stat-confirmed').textContent = regs.filter(r=>r.status==='confirmed').length;
+      document.getElementById('stat-waitlist').textContent  = regs.filter(r=>r.status==='waitlist').length;
+      document.getElementById('stat-schedules-active').textContent = this.schedules.filter(s=>s.status==='active').length;
+    } catch {}
+  },
+
+  renderSchedules() {
+    const courseMap = {};
+    this.courses.forEach(c => { courseMap[c.course_id] = c.title_th; });
+    const tbody = document.getElementById('admin-schedules-body');
+    tbody.innerHTML = this.schedules.map(s => {
+      const roomCls = (s.room||'').includes('1') ? 'room-a' : 'room-b';
+      return `<tr>
+        <td><strong>${UI.esc(courseMap[s.course_id]||s.course_id)}</strong></td>
+        <td><span class="date-badge">${UI.thaiDate(s.start_date)}</span></td>
+        <td>${s.room ? `<span class="room-tag ${roomCls}">${UI.esc(s.room)}</span>` : '—'}</td>
+        <td style="font-size:13px">${UI.thaiDate(s.registration_deadline)}</td>
+        <td><span class="tag tag-info">${UI.esc(s.mode||'')}</span></td>
+        <td style="font-size:13px">—</td>
+        <td>${UI.statusBadge(s.status)}</td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" onclick="AdminApp.openScheduleModal('${s.schedule_id}')">แก้ไข</button>
+          ${s.status==='active' ? `<button class="btn btn-danger-soft btn-sm" onclick="AdminApp.openCancelSchedModal('${s.schedule_id}')">ยกเลิก</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">ยังไม่มีรอบอบรม</td></tr>';
+  },
+
+  openScheduleModal(schedId) {
+    const s = schedId ? this.schedules.find(x => x.schedule_id === schedId) : null;
+    document.getElementById('sched-modal-title2').textContent = s ? 'แก้ไขรอบอบรม' : 'เพิ่มรอบอบรม';
+    document.getElementById('sched-id-input').value = s?.schedule_id || '';
+    // Populate course select
+    const sel = document.getElementById('s-course-id');
+    sel.innerHTML = this.courses.map(c => `<option value="${c.course_id}">${UI.esc(c.title_th)}</option>`).join('');
+    if (s) {
+      sel.value = s.course_id;
+      document.getElementById('s-start').value    = s.start_date?.slice(0,10) || '';
+      document.getElementById('s-end').value      = s.end_date?.slice(0,10) || '';
+      document.getElementById('s-deadline').value = s.registration_deadline?.slice(0,10) || '';
+      document.getElementById('s-room').value     = s.room || '';
+      document.getElementById('s-mode').value     = s.mode || 'onsite';
+      document.getElementById('s-show-mode').value = String(s.show_mode_to_user);
+      document.getElementById('s-cap-onsite').value = s.capacity_onsite || 30;
+      document.getElementById('s-cap-online').value = s.capacity_online || '';
+      document.getElementById('s-online-unlimited').checked = s.online_unlimited === true || s.online_unlimited === 'true';
+      document.getElementById('s-instructor').value = s.instructor || '';
+      document.getElementById('s-signatory-name').value  = s.signatory_name || '';
+      document.getElementById('s-signatory-title').value = s.signatory_title || '';
+      document.getElementById('s-quota-div').value = s.quota_per_division || '';
+    } else {
+      document.getElementById('s-cap-onsite').value = 30;
+      document.getElementById('s-online-unlimited').checked = true;
+    }
+    UI.openModal('modal-schedule');
+  },
+
+  toggleOnlineFields() {
+    const mode = document.getElementById('s-mode').value;
+    document.getElementById('s-online-cap-wrap').style.display = mode === 'onsite' ? 'none' : '';
+  },
+
+  checkConflict() {
+    // Mock conflict check (จะ check จริงจาก GAS เมื่อ save)
+    document.getElementById('conflict-alert').style.display = 'none';
+  },
+
+  async saveSchedule() {
+    const btn  = document.getElementById('btn-save-sched');
+    const id   = document.getElementById('sched-id-input').value;
+    const data = {
+      course_id:             document.getElementById('s-course-id').value,
+      start_date:            document.getElementById('s-start').value,
+      end_date:              document.getElementById('s-end').value || document.getElementById('s-start').value,
+      registration_deadline: document.getElementById('s-deadline').value,
+      room:                  document.getElementById('s-room').value,
+      mode:                  document.getElementById('s-mode').value,
+      show_mode_to_user:     document.getElementById('s-show-mode').value === 'true',
+      capacity_onsite:       parseInt(document.getElementById('s-cap-onsite').value) || 30,
+      capacity_online:       parseInt(document.getElementById('s-cap-online').value) || 0,
+      online_unlimited:      document.getElementById('s-online-unlimited').checked,
+      instructor:            document.getElementById('s-instructor').value.trim(),
+      signatory_name:        document.getElementById('s-signatory-name').value.trim(),
+      signatory_title:       document.getElementById('s-signatory-title').value.trim(),
+      quota_per_division:    document.getElementById('s-quota-div').value.trim()
+    };
+    if (!data.course_id || !data.start_date || !data.registration_deadline) {
+      UI.toast('กรุณากรอกข้อมูลที่จำเป็น','','error'); return;
+    }
+    UI.setLoading(btn, true);
+    try {
+      if (id) await API.adminUpdateSchedule(id, data);
+      else    await API.adminCreateSchedule(data);
+      UI.closeModal('modal-schedule');
+      await this.loadSchedules();
+      this.populateScheduleSelects();
+      UI.toast('บันทึกสำเร็จ','','success');
+    } catch (e) {
+      UI.toast('ไม่สำเร็จ', e.message, 'error');
+      if (e.code === 'ROOM_CONFLICT') document.getElementById('conflict-alert').style.display = '';
+    } finally { UI.setLoading(btn, false); }
+  },
+
+  openCancelSchedModal(schedId) {
+    this._cancelSchedId = schedId;
+    const s = this.schedules.find(x => x.schedule_id === schedId);
+    const c = s ? this.courses.find(x => x.course_id === s.course_id) : null;
+    document.getElementById('cancel-sched-sub').textContent = c ? c.title_th : schedId;
+    document.getElementById('cancel-sched-reason').value = '';
+    UI.openModal('modal-cancel-sched');
+  },
+
+  async confirmCancelSchedule() {
+    const reason = document.getElementById('cancel-sched-reason').value.trim();
+    const btn    = document.getElementById('btn-confirm-cancel-sched');
+    if (!reason) { UI.toast('กรุณาระบุเหตุผล','','error'); return; }
+    UI.setLoading(btn, true);
+    try {
+      const r = await API.adminCancelSchedule(this._cancelSchedId, reason);
+      UI.closeModal('modal-cancel-sched');
+      await this.loadSchedules();
+      UI.toast('ยกเลิกรอบสำเร็จ', 'ส่งอีเมลแจ้ง ' + (r.notified||0) + ' คนแล้ว', 'success');
+    } catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+    finally { UI.setLoading(btn, false); }
+  },
+
+  // ── Registrations ─────────────────────────────────────────────
+  async loadRegistrations() {
+    const schedId = document.getElementById('filter-sched-id').value;
+    try {
+      const r = await API.adminGetRegistrations(schedId || undefined);
+      this.allRegs = r.registrations || [];
+      this.filterRegs();
+    } catch (e) { UI.toast('โหลดรายการไม่ได้', e.message, 'error'); }
+  },
+
+  filterRegs() {
+    const status = document.getElementById('filter-reg-status').value;
+    this.regs = status ? this.allRegs.filter(r => r.status === status) : [...this.allRegs];
+    this.renderRegs();
+  },
+
+  renderRegs() {
+    const courseMap = {};
+    this.courses.forEach(c => { courseMap[c.course_id] = c; });
+    const schedMap  = {};
+    this.schedules.forEach(s => { schedMap[s.schedule_id] = s; });
+    const tbody = document.getElementById('admin-regs-body');
+    tbody.innerHTML = this.regs.map(r => {
+      const sched  = schedMap[r.schedule_id];
+      const course = sched ? courseMap[sched.course_id] : null;
+      const u = r.user || {};
+      return `<tr>
+        <td>
+          <strong>${UI.esc((u.first_name||'') + ' ' + (u.last_name||''))}</strong>
+          <br><span style="font-size:12px;color:var(--text-muted)">${UI.esc(u.email||'')}</span>
+        </td>
+        <td style="font-size:13px">${UI.esc(u.division||'—')}</td>
+        <td style="font-size:13px">${UI.esc(course?.title_th||'—')}</td>
+        <td><span class="date-badge" style="font-size:11px">${UI.thaiDate(sched?.start_date)}</span></td>
+        <td>
+          ${r.status === 'confirmed' && sched?.mode === 'hybrid'
+            ? `<select class="filter-sm" onchange="AdminApp.assignDelivery('${r.reg_id}',this.value)">
+                 <option value="" ${!r.delivery_mode?'selected':''}>— กำหนด —</option>
+                 <option value="onsite" ${r.delivery_mode==='onsite'?'selected':''}>Onsite</option>
+                 <option value="online" ${r.delivery_mode==='online'?'selected':''}>Online</option>
+               </select>`
+            : `<span style="font-size:13px">${r.delivery_mode||'—'}</span>`}
+        </td>
+        <td>${UI.statusBadge(r.status)}</td>
+        <td class="actions">
+          ${r.status==='pending_approval' ? `<button class="btn btn-success btn-sm" onclick="AdminApp.approveReg('${r.reg_id}')">✔ อนุมัติ</button>` : ''}
+          ${r.status==='waitlist' ? `<button class="btn btn-outline btn-sm" onclick="AdminApp.promoteWaitlist('${r.reg_id}','${r.schedule_id}')">⬆ โปรโมต</button>` : ''}
+          ${!['cancelled'].includes(r.status) ? `<button class="btn btn-danger-soft btn-sm" onclick="AdminApp.cancelReg('${r.reg_id}')">ยกเลิก</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">ไม่พบรายการ</td></tr>';
+  },
+
+  async approveReg(regId) {
+    try { await API.adminApproveRegistration(regId); await this.loadRegistrations(); UI.toast('อนุมัติสำเร็จ','','success'); }
+    catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+  },
+
+  async assignDelivery(regId, mode) {
+    if (!mode) return;
+    try { await API.adminAssignDelivery(regId, mode); await this.loadRegistrations(); UI.toast('กำหนด delivery สำเร็จ','','success'); }
+    catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+  },
+
+  async promoteWaitlist(regId, schedId) {
+    try { await API.adminPromoteWaitlist(schedId, regId); await this.loadRegistrations(); UI.toast('โปรโมต Waitlist สำเร็จ','','success'); }
+    catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+  },
+
+  async cancelReg(regId) {
+    const reason = prompt('ระบุเหตุผลการยกเลิก:');
+    if (reason === null) return;
+    try { await API.adminCancelRegistration(regId, reason); await this.loadRegistrations(); UI.toast('ยกเลิกสำเร็จ','','success'); }
+    catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+  },
+
+  exportRegs() {
+    UI.toast('กำลัง export...', 'ระบบกำลังสร้างไฟล์ Excel', 'info');
+  },
+
+  // ── Check-in ──────────────────────────────────────────────────
+  async loadCheckinSlots() {
+    const schedId = document.getElementById('checkin-schedule-sel').value;
+    this._currentCheckinSchedId = schedId;
+    if (!schedId) return;
+    try {
+      const [slotsR, logR] = await Promise.all([
+        API.adminGetCheckinSlots(schedId),
+        API.adminGetCheckinLog(schedId)
+      ]);
+      const slots = slotsR.slots || [];
+      // Populate slot select
+      const sel = document.getElementById('checkin-slot-sel');
+      sel.innerHTML = '<option value="">— เลือกรอบ —</option>' +
+        slots.map(s => `<option value="${s.slot_id}">${UI.esc(s.slot_name)}</option>`).join('');
+      // Render slot table
+      document.getElementById('checkin-slots-body').innerHTML = slots.map(s => `<tr>
+        <td><strong>${UI.esc(s.slot_name)}</strong></td>
+        <td>${s.slot_order}</td>
+        <td style="font-size:13px">${s.open_time||'—'} – ${s.close_time||'—'}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="AdminApp.openSlotModal('${s.slot_id}')">แก้ไข</button></td>
+      </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text-muted)">ยังไม่มีรอบ</td></tr>';
+      // Render attendance
+      const logs = logR.logs || [];
+      const slotNames = slots.map(s => s.slot_name);
+      document.getElementById('checkin-slots-header').innerHTML = slotNames.map(n => `<th>${UI.esc(n)}</th>`).join('') || '<th>สถานะ</th>';
+      document.getElementById('checkin-log-body').innerHTML = logs.map(l => `<tr>
+        <td><strong>${UI.esc(l.user_name)}</strong></td>
+        <td style="font-size:13px">${UI.esc(l.division)}</td>
+        <td style="font-size:12px"><span class="tag tag-info">${UI.esc(l.delivery_mode||'—')}</span></td>
+        ${(l.checkins||[]).map(c => `<td style="text-align:center">
+          ${c.checked
+            ? `<span style="color:var(--success);font-size:18px" title="${UI.thaiDateTime(c.time)}">✓</span>`
+            : '<span style="color:var(--border);font-size:18px">○</span>'}</td>`).join('')}
+      </tr>`).join('') || '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-muted)">ไม่มีผู้ลงทะเบียน</td></tr>';
+    } catch (e) { UI.toast('โหลดข้อมูล check-in ไม่ได้', e.message, 'error'); }
+  },
+
+  toggleScanner() {
+    const schedId = document.getElementById('checkin-schedule-sel').value;
+    const slotId  = document.getElementById('checkin-slot-sel').value;
+    if (!schedId || !slotId) { UI.toast('กรุณาเลือกรอบอบรมและรอบ check-in ก่อน','','warning'); return; }
+    const area = document.getElementById('scanner-area');
+    const cont = document.getElementById('scanner-container');
+    if (this._qrScanner) {
+      this._qrScanner.stop().then(() => { this._qrScanner = null; area.style.display=''; cont.style.display='none'; cont.innerHTML=''; });
+      return;
+    }
+    area.style.display = 'none'; cont.style.display = ''; cont.innerHTML = '<div id="qr-reader" style="width:100%"></div>';
+    this._qrScanner = new Html5QrcodeScanner('qr-reader', { fps:10, qrbox:220 });
+    this._qrScanner.render(async (qrData) => {
+      try {
+        const r = await API.adminCheckin(qrData, slotId);
+        const res = document.getElementById('checkin-result');
+        res.style.display = '';
+        res.style.background = 'var(--success-bg)';
+        res.style.color = 'var(--success)';
+        res.innerHTML = `<div style="font-size:24px;margin-bottom:8px">✅</div><strong>${UI.esc(r.user_name)}</strong><br>${UI.esc(r.slot_name)} — ${UI.esc(r.division)}`;
+        await this.loadCheckinSlots();
+        UI.toast('Check-in สำเร็จ', r.user_name, 'success');
+      } catch (e) {
+        const res = document.getElementById('checkin-result');
+        res.style.display = '';
+        res.style.background = 'var(--danger-bg)';
+        res.style.color = 'var(--danger)';
+        res.innerHTML = `<div style="font-size:24px;margin-bottom:8px">❌</div>${UI.esc(e.message)}`;
+        UI.toast('Check-in ไม่สำเร็จ', e.message, 'error');
+      }
+    }, () => {});
+  },
+
+  exportCheckin() { UI.toast('กำลัง export...', '', 'info'); },
+
+  openSlotModal(slotId) {
+    const schedId = document.getElementById('checkin-schedule-sel').value;
+    document.getElementById('slot-id-input').value = slotId || '';
+    const sel = document.getElementById('slot-sched');
+    sel.innerHTML = this.schedules.filter(s=>s.status==='active').map(s => {
+      const c = this.courses.find(x=>x.course_id===s.course_id);
+      return `<option value="${s.schedule_id}" ${s.schedule_id===schedId?'selected':''}>${UI.esc(c?.title_th||s.schedule_id)} — ${UI.thaiDate(s.start_date)}</option>`;
+    }).join('');
+    UI.openModal('modal-slot');
+  },
+
+  async saveSlot() {
+    const id = document.getElementById('slot-id-input').value;
+    const data = {
+      schedule_id: document.getElementById('slot-sched').value,
+      slot_name:   document.getElementById('slot-name').value.trim(),
+      slot_order:  parseInt(document.getElementById('slot-order').value)||1,
+      open_time:   document.getElementById('slot-open').value,
+      close_time:  document.getElementById('slot-close').value
+    };
+    if (!data.schedule_id || !data.slot_name) { UI.toast('กรุณากรอกข้อมูล','','error'); return; }
+    try {
+      if (id) await API.adminUpdateCheckinSlot(id, data);
+      else    await API.adminCreateCheckinSlot(data);
+      UI.closeModal('modal-slot');
+      await this.loadCheckinSlots();
+      UI.toast('บันทึกสำเร็จ','','success');
+    } catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+  },
+
+  // ── Certificates ──────────────────────────────────────────────
+  async loadCertificates() {
+    const schedId = document.getElementById('filter-cert-sched').value;
+    if (!schedId) return;
+    try {
+      const r = await API.adminGetCertificates(schedId);
+      const certs = r.certs || [];
+      document.getElementById('admin-cert-body').innerHTML = certs.map(c => `<tr>
+        <td><strong>${UI.esc(c.user_name)}</strong></td>
+        <td style="font-size:13px">${UI.esc(c.division)}</td>
+        <td style="text-align:center">
+          <span style="font-size:15px;${c.all_checked?'color:var(--success)':'color:var(--text-muted)'}">${c.all_checked?'✓':'○'}</span>
+          <span style="font-size:12px;color:var(--text-muted);margin-left:4px">${c.checked_count}/${c.total_slots}</span>
+        </td>
+        <td>${UI.statusBadge(c.cert_status)}</td>
+        <td style="font-size:13px">${UI.esc(c.signatory_name||'—')}</td>
+        <td class="actions">
+          ${c.cert_status === 'not_issued' && c.all_checked
+            ? `<button class="btn btn-success btn-sm" onclick="AdminApp.approveCert('${c.reg_id}')">✔ อนุมัติ</button>` : ''}
+          ${c.cert_status === 'approved'
+            ? `<button class="btn btn-primary btn-sm" onclick="AdminApp.issueCert('${c.reg_id}')">📄 ออก Cert</button>` : ''}
+          ${c.cert_status === 'issued'
+            ? `<span style="font-size:12px;color:var(--success)">✅ ส่งแล้ว</span>` : ''}
+        </td>
+      </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">ไม่พบข้อมูล</td></tr>';
+    } catch (e) { UI.toast('โหลดไม่ได้', e.message, 'error'); }
+  },
+
+  async approveCert(regId) {
+    try { await API.adminApproveCert(regId); await this.loadCertificates(); UI.toast('อนุมัติ Cert สำเร็จ','','success'); }
+    catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+  },
+
+  async batchIssueCerts() {
+    const schedId = document.getElementById('filter-cert-sched').value;
+    if (!schedId) { UI.toast('กรุณาเลือกรอบอบรมก่อน','','warning'); return; }
+    try {
+      const r = await API.adminBatchIssueCerts(schedId);
+      await this.loadCertificates();
+      UI.toast('Batch issue สำเร็จ', `อนุมัติ ${r.approved||0} ออก ${r.issued||0} ข้าม ${r.skipped||0}`, 'success');
+    } catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+  },
+
+  // ── Users ─────────────────────────────────────────────────────
+  async loadUsers() {
+    try {
+      const r = await API.adminGetUsers();
+      this.allUsers = r.users || [];
+      // Populate division filter
+      const divs = [...new Set(this.allUsers.map(u=>u.division).filter(Boolean))].sort();
+      const sel  = document.getElementById('filter-user-div');
+      sel.innerHTML = '<option value="">— ทุกสำนัก —</option>' + divs.map(d => `<option value="${UI.esc(d)}">${UI.esc(d)}</option>`).join('');
+      this.filterUsers();
+    } catch { /* silent */ }
+  },
+
+  filterUsers() {
+    const q   = (document.getElementById('user-search').value||'').toLowerCase();
+    const div = document.getElementById('filter-user-div').value;
+    this.users = this.allUsers.filter(u =>
+      (!q   || (u.first_name+' '+u.last_name+' '+u.email).toLowerCase().includes(q)) &&
+      (!div || u.division === div)
+    );
+    this.renderUsers();
+  },
+
+  renderUsers() {
+    const maxCourses = parseInt(DigiTrain.config?.max_courses_per_user||'0');
+    document.getElementById('admin-users-body').innerHTML = this.users.map(u => {
+      const override = parseInt(u.quota_override)||0;
+      const limit    = override > 0 ? override : (maxCourses > 0 ? maxCourses : '∞');
+      const used     = parseInt(u.quota_used)||0;
+      return `<tr>
+        <td><strong>${UI.esc(u.first_name+' '+u.last_name)}</strong></td>
+        <td style="font-size:13px">${UI.esc(u.email)}</td>
+        <td style="font-size:13px">${UI.esc(u.division||'—')}</td>
+        <td style="font-size:13px">${UI.esc(u.position||'—')}</td>
+        <td style="text-align:center"><strong style="color:var(--navy)">${used}</strong>/<span style="color:var(--text-muted)">${limit}</span></td>
+        <td>${u.email_verified ? '<span class="tag tag-success">ยืนยันแล้ว</span>' : '<span class="tag tag-warning">ยังไม่ยืนยัน</span>'}</td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" onclick="AdminApp.openQuotaModal('${u.user_id}','${UI.esc(u.first_name+' '+u.last_name)}','${u.quota_override||''}')">Quota</button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">ไม่พบผู้ใช้</td></tr>';
+  },
+
+  openQuotaModal(userId, name, override) {
+    document.getElementById('quota-modal-sub').textContent = name;
+    document.getElementById('quota-user-id').value  = userId;
+    document.getElementById('quota-override').value = override || '';
+    UI.openModal('modal-user-quota');
+  },
+
+  async saveUserQuota() {
+    const userId   = document.getElementById('quota-user-id').value;
+    const override = document.getElementById('quota-override').value;
+    try {
+      await API.adminUpdateUserQuota(userId, override || '');
+      UI.closeModal('modal-user-quota');
+      await this.loadUsers();
+      UI.toast('อัปเดต Quota สำเร็จ','','success');
+    } catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+  },
+
+  // ── Config ────────────────────────────────────────────────────
+  allConfig: [],
+
+  async loadConfig() {
+    try {
+      const r = await API.adminGetConfig();
+      this.allConfig = r.config || [];
+      const pub = {};
+      this.allConfig.forEach(c => { pub[c.key] = c.value; });
+      DigiTrain.config = pub;
+      document.getElementById('admin-project-name').textContent = pub.project_name || 'DigiTrain';
+      document.getElementById('admin-org-name').textContent     = pub.org_name || '';
+    } catch { /* silent */ }
+  },
+
+  renderConfig() {
+    const groups = {
+      branding: ['project_name','org_name','org_full_name','hero_title','hero_subtitle','footer_text'],
+      rules:    ['allowed_email_domain','max_courses_per_user','auto_approve','waitlist_expire_hours','waitlist_max_multiplier'],
+      email:    ['email_from','email_from_name','email_bcc','notify_days_before'],
+      cert:     ['cert_signatory_name','cert_signatory_title','cert_template_id','cert_folder_id'],
+      system:   ['app_url','gas_url','jwt_secret','token_expire_hours','verify_link_expire_hours']
+    };
+    Object.entries(groups).forEach(([group, keys]) => {
+      const el = document.getElementById('config-' + group);
+      if (!el) return;
+      el.innerHTML = keys.map(key => {
+        const item = this.allConfig.find(c => c.key === key) || { key, value:'', description:'' };
+        const isSecret = key.includes('secret');
+        return `<div class="form-group" style="margin:0">
+          <label title="${UI.esc(item.description||'')}">${UI.esc(key)} ${item.description?`<span style="font-weight:400;color:var(--text-muted)">— ${UI.esc(item.description)}</span>`:''}</label>
+          <div style="display:flex;gap:8px">
+            <input class="form-control" ${isSecret?'type="password"':'type="text"'} id="cfg-${UI.esc(key)}" value="${UI.esc(item.value||'')}" style="flex:1">
+            <button class="btn btn-outline btn-sm" onclick="AdminApp.saveConfig('${key}')">บันทึก</button>
+          </div>
+        </div>`;
+      }).join('');
+    });
+  },
+
+  async saveConfig(key) {
+    const val = document.getElementById('cfg-' + key)?.value;
+    try {
+      await API.adminUpdateConfig(key, val);
+      await this.loadConfig();
+      UI.toast('บันทึกสำเร็จ', key + ' อัปเดตแล้ว', 'success');
+    } catch (e) { UI.toast('ไม่สำเร็จ', e.message, 'error'); }
+  },
+
+  // ── Helpers ────────────────────────────────────────────────────
+  populateScheduleSelects() {
+    const courseMap = {};
+    this.courses.forEach(c => { courseMap[c.course_id] = c.title_th; });
+    const opts = '<option value="">— เลือกรอบ —</option>' +
+      this.schedules.filter(s=>s.status==='active').map(s =>
+        `<option value="${s.schedule_id}">${UI.esc(courseMap[s.course_id]||s.course_id)} — ${UI.thaiDate(s.start_date)}</option>`
+      ).join('');
+    ['filter-sched-id','checkin-schedule-sel','filter-cert-sched'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = opts;
+    });
+    // slot-sched in modal
+    const slotSel = document.getElementById('slot-sched');
+    if (slotSel) slotSel.innerHTML = opts;
+  }
+};
+
+// CSS animation
+const style = document.createElement('style');
+style.textContent = '@keyframes dtSlideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}';
+document.head.appendChild(style);
+
+document.addEventListener('DOMContentLoaded', () => AdminApp.init());
+</script>
+</body>
+</html>

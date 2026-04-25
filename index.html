@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">DigiTrain — ระบบลงทะเบียนฝึกอบรม</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-icon" id="logo-abbr">ICT</div>
+      <div class="logo-text">
+        <span class="brand" id="logo-project">DigiTrain</span>
+        <span class="sub" id="logo-org">กำลังโหลด...</span>
+      </div>
+    </a>
+    <nav>
+      <a class="nav-link active" data-view="courses">หลักสูตร</a>
+      <a class="nav-link" data-view="schedule">ตารางอบรม</a>
+      <a class="nav-link" id="nav-myreg" style="display:none" data-view="myreg">การลงทะเบียนของฉัน</a>
+    </nav>
+    <div class="header-actions">
+      <div id="header-guest">
+        <button class="btn btn-ghost" id="btn-login">เข้าสู่ระบบ</button>
+        <button class="btn btn-primary" id="btn-register-header">สมัครสมาชิก</button>
+      </div>
+      <div id="header-user" style="display:none">
+        <div class="user-chip" id="user-chip">
+          <div class="user-avatar" id="user-avatar">?</div>
+          <span id="user-name-display"></span>
+          <span style="color:rgba(255,255,255,.4);font-size:12px">▾</span>
+        </div>
+        <div class="user-menu" id="user-menu">
+          <a class="user-menu-item" data-view="myreg">📋 การลงทะเบียนของฉัน</a>
+          <a class="user-menu-item" id="menu-profile">⚙ แก้ไขโปรไฟล์</a>
+          <a class="user-menu-item admin-only" href="admin.html" style="display:none">🔑 Admin Panel</a>
+          <div class="user-menu-divider"></div>
+          <a class="user-menu-item" id="menu-logout" style="color:#dc2626">ออกจากระบบ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ VIEWS ═══════════════ -->
+
+<!-- VIEW: COURSES -->
+<div id="view-courses" class="view active">
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+      <div class="hero-badge"><span class="dot"></span> <span id="badge-text">เปิดรับสมัครแล้ว</span></div>
+      <h1 id="hero-title">กำลังโหลด...</h1>
+      <p id="hero-subtitle"></p>
+      <div class="hero-stats" id="hero-stats">
+        <div class="hero-stat"><div class="num" id="stat-courses">—</div><div class="label">หลักสูตร</div></div>
+        <div class="hero-stat"><div class="num" id="stat-schedules">—</div><div class="label">รอบอบรม</div></div>
+        <div class="hero-stat"><div class="num" id="stat-open">—</div><div class="label">เปิดรับสมัคร</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter + Course Grid -->
+  <div class="main">
+    <div class="section-header">
+      <div>
+        <div class="section-title">หลักสูตรทั้งหมด</div>
+        <div class="section-desc">เลือกหลักสูตรที่สนใจและกดลงทะเบียน</div>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-tab active" data-cat="all">ทั้งหมด</button>
+      <button class="filter-tab" data-cat="Office 365">Office 365</button>
+      <button class="filter-tab" data-cat="AI & ChatGPT">AI & ChatGPT</button>
+      <button class="filter-tab" data-cat="Data & Analytics">Data & Analytics</button>
+      <button class="filter-tab" data-cat="Cybersecurity">Cybersecurity</button>
+      <button class="filter-tab" data-cat="ทักษะดิจิทัล">ทักษะดิจิทัล</button>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="ค้นหาหลักสูตร...">
+      </div>
+    </div>
+    <div id="course-grid" class="course-grid">
+      <div class="skeleton-grid">
+        <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: SCHEDULE -->
+<div id="view-schedule" class="view">
+  <div class="main">
+    <div class="section-header">
+      <div>
+        <div class="section-title">ตารางการฝึกอบรม</div>
+        <div class="section-desc">รอบที่เปิดรับสมัคร — ห้องอบรม 1 (ชั้น 3) และ ห้องอบรม 2 (ชั้น 5)</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-muted);cursor:pointer">
+        <input type="checkbox" id="filter-upcoming" checked> แสดงเฉพาะที่ยังเปิดรับ
+      </label>
+    </div>
+    <div class="schedule-wrapper">
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>หลักสูตร</th><th>วันที่</th><th>เวลา</th><th>ห้อง</th>
+            <th>วิทยากร</th><th>ปิดรับ</th><th>ที่นั่ง</th><th>สถานะ</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="schedule-body">
+          <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">กำลังโหลด...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: MY REGISTRATIONS -->
+<div id="view-myreg" class="view">
+  <div class="main">
+    <div class="section-header">
+      <div>
+        <div class="section-title">การลงทะเบียนของฉัน</div>
+        <div class="section-desc">ติดตามสถานะการลงทะเบียนทุกหลักสูตร</div>
+      </div>
+      <button class="btn btn-primary" onclick="App.showView('courses')">+ ลงทะเบียนเพิ่ม</button>
+    </div>
+    <div id="myreg-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- LOGIN / REGISTER MODAL -->
+<div class="modal-overlay" id="modal-auth">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="auth-modal-title">เข้าสู่ระบบ</div>
+        <div class="modal-sub">ใช้อีเมลราชการเป็น Username</div>
+      </div>
+      <button class="modal-close" onclick="UI.closeModal('modal-auth')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login-btn" onclick="AuthUI.switchTab('login')">เข้าสู่ระบบ</button>
+        <button class="modal-tab" id="tab-reg-btn" onclick="AuthUI.switchTab('register')">สมัครสมาชิกใหม่</button>
+      </div>
+
+      <!-- Login -->
+      <div id="tab-login">
+        <div class="form-group">
+          <label>อีเมล <span class="req">*</span></label>
+          <input class="form-control" type="email" id="login-email" placeholder="yourname@senate.go.th" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>รหัสผ่าน <span class="req">*</span></label>
+          <input class="form-control" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div id="login-error" class="form-error" style="display:none"></div>
+        <button class="btn btn-primary btn-block" id="btn-login-submit" onclick="AuthUI.doLogin()">เข้าสู่ระบบ</button>
+        <div style="text-align:center;margin-top:14px;font-size:13px">
+          <a href="#" onclick="AuthUI.switchTab('resend')" style="color:var(--navy-light)">ยังไม่ได้ยืนยัน Email?</a>
+        </div>
+      </div>
+
+      <!-- Register -->
+      <div id="tab-register" style="display:none">
+        <div class="form-section">ข้อมูลส่วนตัว</div>
+        <div class="form-row">
+          <div class="form-group"><label>ชื่อ <span class="req">*</span></label><input class="form-control" id="reg-firstname" placeholder="ชื่อ"></div>
+          <div class="form-group"><label>นามสกุล <span class="req">*</span></label><input class="form-control" id="reg-lastname" placeholder="นามสกุล"></div>
+        </div>
+        <div class="form-group">
+          <label>อีเมล (@senate.go.th) <span class="req">*</span></label>
+          <input class="form-control" type="email" id="reg-email" placeholder="yourname@senate.go.th" autocomplete="email">
+        </div>
+        <div class="form-group"><label>เบอร์โทรศัพท์</label><input class="form-control" type="tel" id="reg-phone" placeholder="08x-xxx-xxxx"></div>
+        <div class="form-section">ข้อมูลราชการ</div>
+        <div class="form-group"><label>ตำแหน่ง <span class="req">*</span></label><input class="form-control" id="reg-position" placeholder="เช่น นักวิชาการคอมพิวเตอร์ชำนาญการ"></div>
+        <div class="form-row">
+          <div class="form-group"><label>กลุ่มงาน <span class="req">*</span></label><input class="form-control" id="reg-dept" placeholder="กลุ่มงาน..."></div>
+          <div class="form-group"><label>สำนัก/ฝ่าย <span class="req">*</span></label>
+            <input class="form-control" id="reg-division" placeholder="สำนักเทคโนโลยีสารสนเทศฯ">
+          </div>
+        </div>
+        <div class="form-group"><label>ประเภทบุคลากร <span class="req">*</span></label>
+          <select class="form-control" id="reg-stafftype">
+            <option value="">— เลือก —</option>
+            <option value="ข้าราชการ">ข้าราชการ</option>
+            <option value="ลูกจ้างประจำ">ลูกจ้างประจำ</option>
+            <option value="พนักงานราชการ">พนักงานราชการ</option>
+          </select>
+        </div>
+        <div class="form-section">ตั้งรหัสผ่าน</div>
+        <div class="form-row">
+          <div class="form-group"><label>รหัสผ่าน <span class="req">*</span></label><input class="form-control" type="password" id="reg-password" placeholder="อย่างน้อย 8 ตัวอักษร"></div>
+          <div class="form-group"><label>ยืนยันรหัสผ่าน <span class="req">*</span></label><input class="form-control" type="password" id="reg-password2" placeholder="••••••••"></div>
+        </div>
+        <div id="reg-error" class="form-error" style="display:none"></div>
+        <button class="btn btn-primary btn-block" id="btn-reg-submit" onclick="AuthUI.doRegister()">สมัครสมาชิก</button>
+        <p style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:12px">
+          หลังสมัคร ระบบจะส่งลิงก์ยืนยันอีเมลไปที่ @senate.go.th ของคุณ</p>
+      </div>
+
+      <!-- Resend verify -->
+      <div id="tab-resend" style="display:none">
+        <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px">กรอกอีเมลเพื่อส่งลิงก์ยืนยันใหม่</p>
+        <div class="form-group"><label>อีเมล</label><input class="form-control" type="email" id="resend-email" placeholder="yourname@senate.go.th"></div>
+        <div id="resend-error" class="form-error" style="display:none"></div>
+        <button class="btn btn-primary btn-block" id="btn-resend-submit" onclick="AuthUI.doResend()">ส่งลิงก์ยืนยันอีกครั้ง</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COURSE SCHEDULE MODAL -->
+<div class="modal-overlay" id="modal-schedules">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="sched-modal-title">รอบอบรมที่เปิดรับ</div>
+        <div class="modal-sub" id="sched-modal-sub"></div>
+      </div>
+      <button class="modal-close" onclick="UI.closeModal('modal-schedules')">✕</button>
+    </div>
+    <div class="modal-body" id="sched-modal-body"></div>
+  </div>
+</div>
+
+<!-- CONFIRM REGISTRATION MODAL -->
+<div class="modal-overlay" id="modal-confirm-reg">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">ยืนยันการลงทะเบียน</div>
+        <div class="modal-sub">ตรวจสอบข้อมูลก่อนยืนยัน</div>
+      </div>
+      <button class="modal-close" onclick="UI.closeModal('modal-confirm-reg')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="course-summary" id="confirm-summary"></div>
+      <div class="form-section">ข้อมูลของคุณ</div>
+      <div id="confirm-user-info"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-muted" onclick="UI.closeModal('modal-confirm-reg')">ยกเลิก</button>
+      <button class="btn btn-success" id="btn-confirm-reg" onclick="App.submitRegistration()">✔ ยืนยันลงทะเบียน</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS + QR MODAL -->
+<div class="modal-overlay" id="modal-success">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">ลงทะเบียนสำเร็จ! 🎉</div></div>
+      <button class="modal-close" onclick="UI.closeModal('modal-success')">✕</button>
+    </div>
+    <div class="modal-body" id="success-body"></div>
+  </div>
+</div>
+
+<!-- CANCEL CONFIRM MODAL -->
+<div class="modal-overlay" id="modal-cancel">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">ยืนยันการยกเลิก</div><div class="modal-sub" id="cancel-modal-sub"></div></div>
+      <button class="modal-close" onclick="UI.closeModal('modal-cancel')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="conflict-warning">⚠️ คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการลงทะเบียน? การดำเนินการนี้ไม่สามารถยกเลิกได้</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-muted" onclick="UI.closeModal('modal-cancel')">ไม่ยกเลิก</button>
+      <button class="btn btn-danger" id="btn-confirm-cancel" onclick="App.submitCancel()">ยืนยันยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- VERIFY EMAIL BANNER -->
+<div id="verify-banner" style="display:none;background:#fef3c7;border-bottom:1px solid #fde68a;padding:10px 28px;text-align:center;font-size:13px;color:#92400e">
+  📧 กรุณายืนยัน Email ก่อนลงทะเบียน — 
+  <a href="#" onclick="AuthUI.switchTab('resend');UI.openModal('modal-auth')" style="color:#c2410c;font-weight:700">ส่งลิงก์ใหม่</a>
+</div>
+
+<footer id="site-footer">
+  <div class="footer-inner">
+    <span id="footer-text"></span>
+    <span>พัฒนาด้วย Google Sheets + Apps Script</span>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+
+// ═══════════════ AUTH UI ═══════════════
+const AuthUI = {
+  switchTab(tab) {
+    ['login','register','resend'].forEach(t => {
+      document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+    });
+    document.getElementById('tab-login-btn').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-reg-btn').classList.toggle('active',   tab === 'register');
+    document.getElementById('auth-modal-title').textContent =
+      tab === 'login' ? 'เข้าสู่ระบบ' : tab === 'register' ? 'สมัครสมาชิกใหม่' : 'ส่งลิงก์ยืนยันอีกครั้ง';
+  },
+
+  async doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-password').value;
+    const btn   = document.getElementById('btn-login-submit');
+    const errEl = document.getElementById('login-error');
+    errEl.style.display = 'none';
+    if (!email || !pass) { errEl.textContent = 'กรุณากรอกอีเมลและรหัสผ่าน'; errEl.style.display = ''; return; }
+    UI.setLoading(btn, true);
+    try {
+      const r = await API.login(email, pass);
+      Auth.save(r.token, r.user);
+      UI.closeModal('modal-auth');
+      App.updateHeader();
+      App.loadMyRegs();
+      UI.toast('เข้าสู่ระบบสำเร็จ', 'ยินดีต้อนรับ ' + r.user.first_name, 'success');
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = '';
+    } finally { UI.setLoading(btn, false); }
+  },
+
+  async doRegister() {
+    const btn   = document.getElementById('btn-reg-submit');
+    const errEl = document.getElementById('reg-error');
+    errEl.style.display = 'none';
+    const data = {
+      email:      document.getElementById('reg-email').value.trim(),
+      password:   document.getElementById('reg-password').value,
+      first_name: document.getElementById('reg-firstname').value.trim(),
+      last_name:  document.getElementById('reg-lastname').value.trim(),
+      phone:      document.getElementById('reg-phone').value.trim(),
+      position:   document.getElementById('reg-position').value.trim(),
+      department: document.getElementById('reg-dept').value.trim(),
+      division:   document.getElementById('reg-division').value.trim(),
+      staff_type: document.getElementById('reg-stafftype').value
+    };
+    const p2 = document.getElementById('reg-password2').value;
+    if (data.password !== p2) { errEl.textContent = 'รหัสผ่านทั้งสองช่องไม่ตรงกัน'; errEl.style.display=''; return; }
+    UI.setLoading(btn, true);
+    try {
+      await API.register(data);
+      UI.closeModal('modal-auth');
+      UI.toast('สมัครสมาชิกสำเร็จ', 'ระบบส่งลิงก์ยืนยัน Email ไปแล้ว กรุณาตรวจสอบ Inbox', 'success', 6000);
+    } catch (e) {
+      errEl.textContent = e.message; errEl.style.display = '';
+    } finally { UI.setLoading(btn, false); }
+  },
+
+  async doResend() {
+    const email = document.getElementById('resend-email').value.trim();
+    const btn   = document.getElementById('btn-resend-submit');
+    const errEl = document.getElementById('resend-error');
+    errEl.style.display = 'none';
+    if (!email) { errEl.textContent = 'กรุณากรอกอีเมล'; errEl.style.display=''; return; }
+    UI.setLoading(btn, true);
+    try {
+      await API.resendVerify(email);
+      UI.toast('ส่งแล้ว', 'ลิงก์ยืนยัน Email ส่งใหม่แล้ว', 'success');
+      UI.closeModal('modal-auth');
+    } catch (e) {
+      errEl.textContent = e.message; errEl.style.display='';
+    } finally { UI.setLoading(btn, false); }
+  }
+};
+
+// ═══════════════ MAIN APP ═══════════════
+const App = {
+  courses:   [],
+  schedules: [],
+  myRegs:    [],
+  _pendingScheduleId: null,
+  _pendingCancelRegId: null,
+  currentCat: 'all',
+  currentQ:   '',
+
+  async init() {
+    // Check verify token in URL
+    const params = new URLSearchParams(location.search);
+    if (params.get('token')) {
+      await this.handleVerifyToken(params.get('token'));
+      history.replaceState({}, '', 'index.html');
+    }
+
+    this.updateHeader();
+    await this.loadConfig();
+    await this.loadCourses();
+    await this.loadSchedules();
+    if (Auth.isLoggedIn()) this.loadMyRegs();
+
+    // Nav links
+    document.querySelectorAll('.nav-link').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        if (!Auth.isLoggedIn() && a.dataset.view === 'myreg') {
+          UI.openModal('modal-auth'); return;
+        }
+        this.showView(a.dataset.view);
+      });
+    });
+
+    // User menu
+    document.getElementById('user-chip')?.addEventListener('click', () => {
+      document.getElementById('user-menu').classList.toggle('open');
+    });
+    document.querySelectorAll('[data-view]').forEach(el => {
+      el.addEventListener('click', e => {
+        if (el.closest('#user-menu')) {
+          document.getElementById('user-menu').classList.remove('open');
+          this.showView(el.dataset.view);
+        }
+      });
+    });
+    document.getElementById('menu-logout')?.addEventListener('click', () => this.logout());
+    document.getElementById('btn-login')?.addEventListener('click', () => {
+      AuthUI.switchTab('login'); UI.openModal('modal-auth');
+    });
+    document.getElementById('btn-register-header')?.addEventListener('click', () => {
+      AuthUI.switchTab('register'); UI.openModal('modal-auth');
+    });
+
+    // Search
+    document.getElementById('search-input')?.addEventListener('input', e => {
+      this.currentQ = e.target.value;
+      this.renderCourses();
+    });
+
+    // Filter tabs
+    document.querySelectorAll('.filter-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentCat = btn.dataset.cat;
+        this.renderCourses();
+      });
+    });
+
+    // Schedule upcoming filter
+    document.getElementById('filter-upcoming')?.addEventListener('change', () => this.renderSchedules());
+
+    // Close menus on outside click
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#user-chip') && !e.target.closest('#user-menu'))
+        document.getElementById('user-menu')?.classList.remove('open');
+    });
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      m.addEventListener('click', e => { if (e.target === m) UI.closeAllModals(); });
+    });
+  },
+
+  async handleVerifyToken(token) {
+    try {
+      await API.verifyEmail(token);
+      UI.toast('ยืนยัน Email สำเร็จ', 'คุณสามารถเข้าสู่ระบบได้แล้ว 🎉', 'success', 6000);
+    } catch (e) {
+      UI.toast('ยืนยัน Email ไม่สำเร็จ', e.message, 'error', 6000);
+    }
+  },
+
+  async loadConfig() {
+    try {
+      const r = await API.getConfig();
+      const c = r.config;
+      DigiTrain.config = c;
+      document.getElementById('page-title').textContent    = (c.project_name||'DigiTrain') + ' — ระบบลงทะเบียนฝึกอบรม';
+      document.getElementById('logo-project').textContent  = c.project_name || 'DigiTrain';
+      document.getElementById('logo-org').textContent      = c.org_name || '';
+      document.getElementById('logo-abbr').textContent     = (c.org_name||'ICT').slice(0,3).toUpperCase();
+      document.getElementById('hero-title').textContent    = c.hero_title || c.project_name;
+      document.getElementById('hero-subtitle').textContent = c.hero_subtitle || '';
+      document.getElementById('footer-text').textContent   = c.footer_text || c.org_full_name || '';
+    } catch { /* ใช้ค่า default */ }
+  },
+
+  async loadCourses() {
+    try {
+      const r = await API.getCourses({ upcoming: 'true' });
+      this.courses = r.courses || [];
+      this.renderCourses();
+      document.getElementById('stat-courses').textContent = this.courses.length;
+    } catch (e) {
+      document.getElementById('course-grid').innerHTML =
+        `<div class="empty-state" style="grid-column:1/-1"><div class="icon">⚠</div><h3>ไม่สามารถโหลดหลักสูตรได้</h3><p>${UI.esc(e.message)}</p></div>`;
+    }
+  },
+
+  async loadSchedules() {
+    try {
+      const r = await API.getSchedules({ upcoming: 'true' });
+      this.schedules = r.schedules || [];
+      this.renderSchedules();
+      document.getElementById('stat-schedules').textContent = this.schedules.length;
+      document.getElementById('stat-open').textContent = this.schedules.filter(s => !s.stats?.is_full).length;
+    } catch { /* silent */ }
+  },
+
+  async loadMyRegs() {
+    if (!Auth.isLoggedIn()) return;
+    try {
+      const r = await API.getMyRegistrations();
+      this.myRegs = r.registrations || [];
+      this.renderMyRegs();
+    } catch { /* silent */ }
+  },
+
+  renderCourses() {
+    const grid = document.getElementById('course-grid');
+    let list = this.courses;
+    if (this.currentCat !== 'all') list = list.filter(c => c.category === this.currentCat);
+    if (this.currentQ) {
+      const q = this.currentQ.toLowerCase();
+      list = list.filter(c =>
+        (c.title_th||'').toLowerCase().includes(q) ||
+        (c.description||'').toLowerCase().includes(q)
+      );
+    }
+    if (!list.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div><h3>ไม่พบหลักสูตรที่ค้นหา</h3></div>`;
+      return;
+    }
+    grid.innerHTML = list.map(c => this.courseCardHTML(c)).join('');
+  },
+
+  courseCardHTML(c) {
+    const catMap = {
+      'Office 365':      { cls: 'cat-office',   label: 'Office 365' },
+      'AI & ChatGPT':    { cls: 'cat-ai',        label: 'AI & ChatGPT' },
+      'Data & Analytics':{ cls: 'cat-data',      label: 'Data' },
+      'Cybersecurity':   { cls: 'cat-security',  label: 'Security' },
+      'ทักษะดิจิทัล':    { cls: 'cat-skill',     label: 'ทักษะดิจิทัล' }
+    };
+    const cat = catMap[c.category] || { cls: 'cat-skill', label: c.category };
+    const sched = c.schedules?.[0];
+    const stats = sched?.stats || {};
+    const isFull = stats.is_full;
+    const hasSchedule = !!sched;
+
+    return `<div class="course-card">
+      <div class="card-header">
+        <span class="card-category ${cat.cls}">${cat.label}</span>
+        <div class="card-title">${UI.esc(c.title_th)}</div>
+        <div class="card-desc">${UI.esc(c.description||'')}</div>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-chip">🕐 ${UI.esc(String(c.hours))} ชม.</span>
+          ${sched ? `<span class="info-chip">📅 ${UI.thaiDate(sched.start_date)}</span>` : ''}
+          ${sched?.room ? `<span class="info-chip">📍 ${UI.esc(sched.room)}</span>` : ''}
+        </div>
+        ${sched ? UI.seatBar(stats.registered_onsite||0, stats.capacity_onsite||0) : '<span style="font-size:13px;color:var(--text-muted)">ยังไม่มีรอบอบรม</span>'}
+      </div>
+      <div class="card-footer">
+        ${c.schedules?.length > 1 ? `<span style="font-size:12px;color:var(--text-muted)">${c.schedules.length} รอบที่เปิดรับ</span>` : '<span></span>'}
+        ${hasSchedule
+          ? `<button class="btn btn-primary btn-sm" onclick="App.openScheduleModal('${UI.esc(c.course_id)}')">${isFull ? '📋 รายชื่อสำรอง' : 'ลงทะเบียน'}</button>`
+          : `<button class="btn btn-muted btn-sm" disabled>ยังไม่เปิดรับ</button>`}
+      </div>
+    </div>`;
+  },
+
+  renderSchedules() {
+    const tbody = document.getElementById('schedule-body');
+    const upcomingOnly = document.getElementById('filter-upcoming')?.checked;
+    let list = this.schedules;
+    if (upcomingOnly) list = list.filter(s => {
+      const d = new Date(s.registration_deadline);
+      return d >= new Date();
+    });
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">ไม่พบรอบอบรม</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(s => {
+      const stats    = s.stats || {};
+      const deadline = new Date(s.registration_deadline);
+      const isExpired = deadline < new Date();
+      const isFull    = stats.is_full;
+      const status    = isExpired ? 'closed' : isFull ? 'full' : 'active';
+      const roomCls   = (s.room||'').includes('1') ? 'room-a' : 'room-b';
+      return `<tr>
+        <td><strong>${UI.esc(s.course_title||'')}</strong></td>
+        <td><span class="date-badge">${UI.thaiDate(s.start_date)}</span>${s.end_date && s.end_date !== s.start_date ? `<br><span style="font-size:11px;color:var(--text-muted)">ถึง ${UI.thaiDate(s.end_date)}</span>` : ''}</td>
+        <td style="font-size:13px">${UI.esc(s.course_hours||'')} ชม.</td>
+        <td><span class="room-tag ${roomCls}">${UI.esc(s.room||'—')}</span></td>
+        <td style="font-size:13px;color:var(--text-muted)">${UI.esc(s.instructor||'—')}</td>
+        <td style="font-size:12px">${UI.thaiDate(s.registration_deadline)}</td>
+        <td>${UI.seatBar(stats.registered_onsite||0, stats.capacity_onsite||0)}</td>
+        <td>${UI.statusBadge(status)}</td>
+        <td><button class="btn btn-primary btn-sm" ${isExpired ? 'disabled' : `onclick="App.openRegisterFlow('${s.schedule_id}')"`}>${isFull ? 'สำรอง' : 'สมัคร'}</button></td>
+      </tr>`;
+    }).join('');
+  },
+
+  renderMyRegs() {
+    const el = document.getElementById('myreg-list');
+    if (!this.myRegs.length) {
+      el.innerHTML = `<div class="empty-state"><div class="icon">📋</div><h3>ยังไม่มีรายการลงทะเบียน</h3><p style="font-size:14px;color:var(--text-muted)">เริ่มลงทะเบียนหลักสูตรแรกของคุณได้เลย</p></div>`;
+      return;
+    }
+    el.innerHTML = `<div style="display:flex;flex-direction:column;gap:14px">` +
+      this.myRegs.map(r => {
+        const canCancel = r.status === 'confirmed' || r.status === 'waitlist';
+        const canConfirmWL = r.status === 'waitlist_offered';
+        return `<div class="reg-card">
+          <div class="reg-card-left">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${UI.esc(r.course?.title_th||'')}</div>
+            <div style="font-size:13px;color:var(--text-muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">
+              ${r.schedule ? `<span>📅 ${UI.thaiDate(r.schedule.start_date)}</span>` : ''}
+              ${r.schedule?.room ? `<span>📍 ${UI.esc(r.schedule.room)}</span>` : ''}
+              ${r.delivery_mode ? `<span>${r.delivery_mode === 'onsite' ? '🏢 Onsite' : '💻 Online'}</span>` : ''}
+              ${r.waitlist_position ? `<span>⏳ สำรองลำดับ ${r.waitlist_position}</span>` : ''}
+            </div>
+          </div>
+          <div class="reg-card-right">
+            ${UI.statusBadge(r.status)}
+            <div style="display:flex;gap:8px;margin-top:8px">
+              ${canConfirmWL ? `<button class="btn btn-success btn-sm" onclick="App.confirmWaitlist('${r.reg_id}')">✔ ยืนยันสิทธิ์</button>` : ''}
+              ${canCancel ? `<button class="btn btn-danger-soft btn-sm" onclick="App.openCancelModal('${r.reg_id}','${UI.esc(r.course?.title_th||'')}')">ยกเลิก</button>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('') + '</div>';
+  },
+
+  openScheduleModal(courseId) {
+    const course = this.courses.find(c => c.course_id === courseId);
+    if (!course) return;
+    document.getElementById('sched-modal-title').textContent = course.title_th;
+    document.getElementById('sched-modal-sub').textContent   = course.category + ' · ' + course.hours + ' ชั่วโมง';
+    const body  = document.getElementById('sched-modal-body');
+    const scheds = course.schedules || [];
+    if (!scheds.length) {
+      body.innerHTML = `<div class="empty-state"><h3>ยังไม่มีรอบอบรม</h3></div>`;
+    } else {
+      body.innerHTML = scheds.map(s => {
+        const stats   = s.stats || {};
+        const expired = new Date(s.registration_deadline) < new Date();
+        const full    = stats.is_full;
+        const roomCls = (s.room||'').includes('1') ? 'room-a' : 'room-b';
+        return `<div class="sched-row">
+          <div class="sched-info">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+              <span class="date-badge">${UI.thaiDate(s.start_date)}</span>
+              ${s.end_date && s.end_date !== s.start_date ? `<span style="font-size:12px;color:var(--text-muted)">ถึง ${UI.thaiDate(s.end_date)}</span>` : ''}
+              ${s.room ? `<span class="room-tag ${roomCls}">${UI.esc(s.room)}</span>` : ''}
+            </div>
+            <div style="font-size:13px;color:var(--text-muted)">ปิดรับสมัคร: ${UI.thaiDate(s.registration_deadline)} ${s.instructor ? '· ' + UI.esc(s.instructor) : ''}</div>
+            <div style="margin-top:8px">${UI.seatBar(stats.registered_onsite||0, stats.capacity_onsite||0)}</div>
+          </div>
+          <button class="btn ${full ? 'btn-outline' : 'btn-primary'} btn-sm" ${expired ? 'disabled' : `onclick="App.openRegisterFlow('${s.schedule_id}')"`}>
+            ${expired ? 'ปิดแล้ว' : full ? 'รายชื่อสำรอง' : 'ลงทะเบียน'}
+          </button>
+        </div>`;
+      }).join('');
+    }
+    UI.openModal('modal-schedules');
+  },
+
+  openRegisterFlow(scheduleId) {
+    if (!Auth.isLoggedIn()) {
+      UI.closeAllModals();
+      this._pendingScheduleId = scheduleId;
+      AuthUI.switchTab('login');
+      UI.openModal('modal-auth');
+      UI.toast('กรุณาเข้าสู่ระบบก่อน', 'เข้าสู่ระบบแล้วจะกลับมาลงทะเบียนต่อ', 'info');
+      return;
+    }
+    const user  = Auth.getUser();
+    const sched = this.schedules.find(s => s.schedule_id === scheduleId);
+    this._pendingScheduleId = scheduleId;
+
+    // Summary box
+    document.getElementById('confirm-summary').innerHTML = `
+      <div class="cs-title">${UI.esc(sched?.course_title||'')}</div>
+      <div class="cs-details">
+        <span class="cs-detail">📅 ${UI.thaiDate(sched?.start_date)}</span>
+        ${sched?.room ? `<span class="cs-detail">📍 ${UI.esc(sched.room)}</span>` : ''}
+        <span class="cs-detail">⏰ ปิดรับสมัคร ${UI.thaiDate(sched?.registration_deadline)}</span>
+      </div>`;
+
+    // User info
+    document.getElementById('confirm-user-info').innerHTML = `
+      <div class="form-row">
+        <div class="form-group"><label>ชื่อ-นามสกุล</label>
+          <input class="form-control" value="${UI.esc(user.first_name+' '+user.last_name)}" readonly></div>
+        <div class="form-group"><label>สำนัก</label>
+          <input class="form-control" value="${UI.esc(user.division||'')}" readonly></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>ตำแหน่ง</label>
+          <input class="form-control" value="${UI.esc(user.position||'')}" readonly></div>
+        <div class="form-group"><label>อีเมล</label>
+          <input class="form-control" value="${UI.esc(user.email)}" readonly></div>
+      </div>`;
+
+    UI.closeModal('modal-schedules');
+    UI.openModal('modal-confirm-reg');
+  },
+
+  async submitRegistration() {
+    const btn = document.getElementById('btn-confirm-reg');
+    UI.setLoading(btn, true);
+    try {
+      const r = await API.registerCourse(this._pendingScheduleId);
+      UI.closeModal('modal-confirm-reg');
+      await this.loadMyRegs();
+      await this.loadSchedules();
+
+      if (r.status === 'waitlist') {
+        document.getElementById('success-body').innerHTML = `
+          <div class="qr-success">
+            <div class="qr-icon-wrap" style="background:var(--warning-bg)">⏳</div>
+            <div class="qr-title">อยู่ในรายชื่อสำรองลำดับ ${r.waitlist_position}</div>
+            <div class="qr-sub">Onsite เต็มแล้ว ระบบจะแจ้งเตือนทางอีเมลทันทีที่มีที่นั่งว่าง<br>คุณมีเวลายืนยันสิทธิ์ภายใน 24 ชั่วโมง</div>
+            <div class="qr-info"><div class="qr-info-row"><span>รหัส</span><span style="font-family:monospace">${UI.esc(r.reg_id)}</span></div></div>
+            <button class="btn btn-primary btn-sm" onclick="UI.closeModal('modal-success')">รับทราบ</button>
+          </div>`;
+      } else {
+        document.getElementById('success-body').innerHTML = `
+          <div class="qr-success">
+            <div class="qr-icon-wrap">✅</div>
+            <div class="qr-title">ลงทะเบียนสำเร็จ!</div>
+            <div class="qr-sub">ระบบส่งอีเมลยืนยันพร้อม QR Code ไปยังอีเมลของคุณแล้ว</div>
+            <div class="qr-info"><div class="qr-info-row"><span>รหัสลงทะเบียน</span><span style="font-family:monospace;color:var(--navy)">${UI.esc(r.reg_id)}</span></div></div>
+            <p style="font-size:13px;color:var(--text-muted)">ใช้ QR Code จากอีเมลสำหรับ Check-in หน้าห้อง</p>
+            <button class="btn btn-primary btn-sm" onclick="App.showView('myreg');UI.closeModal('modal-success')">ดูการลงทะเบียนของฉัน</button>
+          </div>`;
+      }
+      UI.openModal('modal-success');
+    } catch (e) {
+      UI.closeModal('modal-confirm-reg');
+      UI.toast('ลงทะเบียนไม่สำเร็จ', e.message, 'error');
+    } finally { UI.setLoading(btn, false); }
+  },
+
+  openCancelModal(regId, title) {
+    this._pendingCancelRegId = regId;
+    document.getElementById('cancel-modal-sub').textContent = title;
+    UI.openModal('modal-cancel');
+  },
+
+  async submitCancel() {
+    const btn = document.getElementById('btn-confirm-cancel');
+    UI.setLoading(btn, true);
+    try {
+      await API.cancelRegistration(this._pendingCancelRegId);
+      UI.closeModal('modal-cancel');
+      await this.loadMyRegs();
+      await this.loadSchedules();
+      UI.toast('ยกเลิกสำเร็จ', 'ยกเลิกการลงทะเบียนเรียบร้อยแล้ว', 'success');
+    } catch (e) {
+      UI.closeModal('modal-cancel');
+      UI.toast('ไม่สามารถยกเลิกได้', e.message, 'error');
+    } finally { UI.setLoading(btn, false); }
+  },
+
+  async confirmWaitlist(regId) {
+    try {
+      await API.confirmWaitlist(regId);
+      await this.loadMyRegs();
+      UI.toast('ยืนยันสิทธิ์สำเร็จ', 'ลงทะเบียนเรียบร้อย ระบบส่งอีเมลยืนยันแล้ว', 'success');
+    } catch (e) { UI.toast('เกิดข้อผิดพลาด', e.message, 'error'); }
+  },
+
+  showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name)?.classList.add('active');
+    document.querySelectorAll('.nav-link').forEach(a => {
+      a.classList.toggle('active', a.dataset.view === name);
+    });
+    if (name === 'myreg') this.loadMyRegs();
+    window.scrollTo(0, 0);
+  },
+
+  updateHeader() {
+    const loggedIn = Auth.isLoggedIn();
+    document.getElementById('header-guest').style.display = loggedIn ? 'none' : '';
+    document.getElementById('header-user').style.display  = loggedIn ? '' : 'none';
+    document.getElementById('nav-myreg').style.display    = loggedIn ? '' : 'none';
+    if (loggedIn) {
+      const user = Auth.getUser();
+      document.getElementById('user-name-display').textContent = user.first_name || '';
+      document.getElementById('user-avatar').textContent = (user.first_name?.[0]||'?') + (user.last_name?.[0]||'');
+      if (Auth.isAdmin()) {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+      }
+      if (user.email_verified === false) {
+        document.getElementById('verify-banner').style.display = '';
+      }
+    }
+  },
+
+  logout() {
+    Auth.clear();
+    this.updateHeader();
+    this.showView('courses');
+    UI.toast('ออกจากระบบแล้ว', '', 'info');
+  }
+};
+
+// CSS animation keyframe
+const style = document.createElement('style');
+style.textContent = '@keyframes dtSlideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}';
+document.head.appendChild(style);
+
+// Init
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>
