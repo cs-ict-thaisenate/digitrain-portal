@@ -5,7 +5,7 @@
 
 const DigiTrain = {
   // ← วาง Google Apps Script Web App URL ที่นี่
-  GAS_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbwvgiOKLxuHqTgnXh8-2s7gftgdrFvdEJ_S1ljmQ2D3BO9t6-0zDiMESJUtPJFqip4foQ/exec',
 
   // ตั้งค่า UI ที่โหลดจาก Config sheet ของ GAS
   config: {
