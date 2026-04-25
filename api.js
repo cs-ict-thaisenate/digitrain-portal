@@ -126,7 +126,7 @@ const Auth = (() => {
     getToken:  ()        => localStorage.getItem(KEY),
     getUser:   ()        => { try { return JSON.parse(localStorage.getItem(UKEY)); } catch { return null; } },
     isLoggedIn:()        => !!localStorage.getItem(KEY),
-    isAdmin:   ()        => { const u = Auth.getUser(); return u && u.staff_type === 'admin'; },
+    isAdmin:   ()        => { const u = Auth.getUser(); return u && u.role === 'admin'; },
 
     save: (token, user)  => {
       localStorage.setItem(KEY, token);

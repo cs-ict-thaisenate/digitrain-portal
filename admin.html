@@ -471,7 +471,7 @@ const AdminApp = {
     UI.setLoading(btn, true);
     try {
       const r = await API.login(email, pass);
-      if (r.user.staff_type !== 'admin') { errEl.textContent='บัญชีนี้ไม่มีสิทธิ์ Admin'; errEl.style.display=''; return; }
+      if (r.user.role !== 'admin') { errEl.textContent='บัญชีนี้ไม่มีสิทธิ์ Admin'; errEl.style.display=''; return; }
       Auth.save(r.token, r.user);
       this.showDashboard();
     } catch (e) { errEl.textContent = e.message; errEl.style.display = ''; }
