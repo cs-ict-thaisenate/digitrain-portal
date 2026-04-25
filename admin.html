@@ -276,10 +276,14 @@
       <div class="form-group"><label>ชื่อหลักสูตร (ภาษาอังกฤษ)</label><input class="form-control" id="c-title-en"></div>
       <div class="form-row">
         <div class="form-group"><label>หมวดหมู่ <span class="req">*</span></label>
-          <select class="form-control" id="c-category">
-            <option>Office 365</option><option>AI & ChatGPT</option>
-            <option>Data & Analytics</option><option>Cybersecurity</option><option>ทักษะดิจิทัล</option>
-          </select>
+          <div style="display:flex;gap:8px">
+            <select class="form-control" id="c-category-sel" onchange="AdminApp.syncCategoryInput(this.value)" style="flex:1">
+              <!-- โหลดจากข้อมูลจริงใน openCourseModal() -->
+              <option value="">— เลือกจากที่มีอยู่ —</option>
+            </select>
+            <input class="form-control" id="c-category" placeholder="หรือพิมพ์ใหม่" style="flex:1" title="พิมพ์หมวดหมู่ใหม่ได้เลย">
+          </div>
+          <small style="color:var(--text-muted);font-size:12px;margin-top:3px;display:block">เลือกจากที่มีอยู่ หรือพิมพ์หมวดหมู่ใหม่ได้เลย</small>
         </div>
         <div class="form-group"><label>ชั่วโมง <span class="req">*</span></label><input class="form-control" type="number" id="c-hours" min="1" value="6"></div>
       </div>
@@ -529,14 +533,27 @@ const AdminApp = {
   openCourseModal(courseId) {
     const c = courseId ? this.courses.find(x => x.course_id === courseId) : null;
     document.getElementById('course-modal-title').textContent = c ? 'แก้ไขหลักสูตร' : 'เพิ่มหลักสูตร';
-    document.getElementById('course-id-input').value  = c?.course_id || '';
+    document.getElementById('course-id-input').value = c?.course_id || '';
     document.getElementById('c-title-th').value  = c?.title_th || '';
     document.getElementById('c-title-en').value  = c?.title_en || '';
-    document.getElementById('c-category').value  = c?.category || 'Office 365';
     document.getElementById('c-hours').value     = c?.hours || 6;
     document.getElementById('c-desc').value      = c?.description || '';
     document.getElementById('c-status').value    = c?.status || 'active';
+
+    // โหลด categories จากข้อมูลจริง — ไม่ hardcode
+    const existingCats = [...new Set(this.courses.map(x => x.category).filter(Boolean))].sort();
+    const sel = document.getElementById('c-category-sel');
+    sel.innerHTML = '<option value="">— เลือกจากที่มีอยู่ —</option>' +
+      existingCats.map(cat => `<option value="${UI.esc(cat)}" ${cat === c?.category ? 'selected' : ''}>${UI.esc(cat)}</option>`).join('');
+
+    // ใส่ category ปัจจุบัน (ถ้าแก้ไข)
+    document.getElementById('c-category').value = c?.category || '';
     UI.openModal('modal-course');
+  },
+
+  // sync เมื่อเลือกจาก dropdown → ใส่ใน text input
+  syncCategoryInput(val) {
+    if (val) document.getElementById('c-category').value = val;
   },
 
   async saveCourse() {

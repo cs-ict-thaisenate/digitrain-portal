@@ -73,13 +73,9 @@
         <div class="section-desc">เลือกหลักสูตรที่สนใจและกดลงทะเบียน</div>
       </div>
     </div>
-    <div class="filter-bar">
+    <div class="filter-bar" id="filter-bar">
+      <!-- โหลด categories จากข้อมูลจริงใน loadCourses() -->
       <button class="filter-tab active" data-cat="all">ทั้งหมด</button>
-      <button class="filter-tab" data-cat="Office 365">Office 365</button>
-      <button class="filter-tab" data-cat="AI & ChatGPT">AI & ChatGPT</button>
-      <button class="filter-tab" data-cat="Data & Analytics">Data & Analytics</button>
-      <button class="filter-tab" data-cat="Cybersecurity">Cybersecurity</button>
-      <button class="filter-tab" data-cat="ทักษะดิจิทัล">ทักษะดิจิทัล</button>
       <div class="search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="search-input" placeholder="ค้นหาหลักสูตร...">
@@ -439,16 +435,6 @@ const App = {
       this.renderCourses();
     });
 
-    // Filter tabs
-    document.querySelectorAll('.filter-tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.currentCat = btn.dataset.cat;
-        this.renderCourses();
-      });
-    });
-
     // Schedule upcoming filter
     document.getElementById('filter-upcoming')?.addEventListener('change', () => this.renderSchedules());
 
@@ -492,12 +478,39 @@ const App = {
     try {
       const r = await API.getCourses({ upcoming: 'true' });
       this.courses = r.courses || [];
+      this.renderFilterTabs();
       this.renderCourses();
       document.getElementById('stat-courses').textContent = this.courses.length;
     } catch (e) {
       document.getElementById('course-grid').innerHTML =
         `<div class="empty-state" style="grid-column:1/-1"><div class="icon">⚠</div><h3>ไม่สามารถโหลดหลักสูตรได้</h3><p>${UI.esc(e.message)}</p></div>`;
     }
+  },
+
+  renderFilterTabs() {
+    // ดึง categories จากข้อมูลจริง ไม่ hardcode
+    const cats = [...new Set(this.courses.map(c => c.category).filter(Boolean))].sort();
+    const bar  = document.getElementById('filter-bar');
+    const searchBox = bar.querySelector('.search-box');
+
+    // ลบ filter tabs เก่าออกทั้งหมด (ยกเว้น search box)
+    bar.querySelectorAll('.filter-tab').forEach(t => t.remove());
+
+    // สร้าง "ทั้งหมด" + tab ต่อ category
+    const tabs = ['all', ...cats];
+    tabs.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-tab' + (cat === this.currentCat ? ' active' : '');
+      btn.dataset.cat = cat;
+      btn.textContent = cat === 'all' ? `ทั้งหมด (${this.courses.length})` : cat;
+      btn.addEventListener('click', () => {
+        bar.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentCat = cat;
+        this.renderCourses();
+      });
+      bar.insertBefore(btn, searchBox);
+    });
   },
 
   async loadSchedules() {
@@ -519,6 +532,37 @@ const App = {
     } catch { /* silent */ }
   },
 
+  // Generate badge color จาก category name — ไม่ hardcode
+  // category เดิมจะได้สีคงที่เสมอ category ใหม่ได้สีอัตโนมัติ
+  getCatStyle(category) {
+    const presets = {
+      'Office 365':       { bg: '#eff6ff', color: '#1d4ed8' },
+      'AI & ChatGPT':     { bg: '#faf5ff', color: '#7c3aed' },
+      'AI':               { bg: '#faf5ff', color: '#7c3aed' },
+      'Data & Analytics': { bg: '#f0fdf4', color: '#15803d' },
+      'Data':             { bg: '#f0fdf4', color: '#15803d' },
+      'Cybersecurity':    { bg: '#fef2f2', color: '#b91c1c' },
+      'ทักษะดิจิทัล':     { bg: '#fff7ed', color: '#c2410c' },
+    };
+    if (presets[category]) return presets[category];
+
+    // ไม่อยู่ใน preset — hash จาก string เพื่อเลือกสีจาก palette
+    const palette = [
+      { bg: '#f0fdf4', color: '#166534' },
+      { bg: '#fdf4ff', color: '#86198f' },
+      { bg: '#fff1f2', color: '#9f1239' },
+      { bg: '#fff7ed', color: '#9a3412' },
+      { bg: '#ecfeff', color: '#155e75' },
+      { bg: '#f0f9ff', color: '#075985' },
+      { bg: '#fefce8', color: '#854d0e' },
+      { bg: '#f5f3ff', color: '#5b21b6' },
+    ];
+    let hash = 0;
+    for (let i = 0; i < (category||'').length; i++)
+      hash = (hash * 31 + (category||'').charCodeAt(i)) & 0xffff;
+    return palette[hash % palette.length];
+  },
+
   renderCourses() {
     const grid = document.getElementById('course-grid');
     let list = this.courses;
@@ -538,14 +582,9 @@ const App = {
   },
 
   courseCardHTML(c) {
-    const catMap = {
-      'Office 365':      { cls: 'cat-office',   label: 'Office 365' },
-      'AI & ChatGPT':    { cls: 'cat-ai',        label: 'AI & ChatGPT' },
-      'Data & Analytics':{ cls: 'cat-data',      label: 'Data' },
-      'Cybersecurity':   { cls: 'cat-security',  label: 'Security' },
-      'ทักษะดิจิทัล':    { cls: 'cat-skill',     label: 'ทักษะดิจิทัล' }
-    };
-    const cat = catMap[c.category] || { cls: 'cat-skill', label: c.category };
+    // สีของ category badge — generate จาก category name ไม่ hardcode
+    // ถ้า category ตรงกับ preset ใช้สีนั้น ถ้าไม่ตรงก็ generate สีใหม่อัตโนมัติ
+    const catStyle = this.getCatStyle(c.category);
     const sched = c.schedules?.[0];
     const stats = sched?.stats || {};
     const isFull = stats.is_full;
@@ -553,7 +592,7 @@ const App = {
 
     return `<div class="course-card">
       <div class="card-header">
-        <span class="card-category ${cat.cls}">${cat.label}</span>
+        <span class="card-category" style="background:${catStyle.bg};color:${catStyle.color}">${UI.esc(c.category||'')}</span>
         <div class="card-title">${UI.esc(c.title_th)}</div>
         <div class="card-desc">${UI.esc(c.description||'')}</div>
       </div>
